@@ -3,86 +3,96 @@ import 'package:provider/provider.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../models/note.dart';
 import '../providers/note_provider.dart';
-import '../constants/app_constants.dart';
 import 'color_picker_widget.dart';
 
-class CreateNoteWidget extends StatefulWidget {
-  const CreateNoteWidget({super.key});
+class EditNoteDialog extends StatefulWidget {
+  final Note note;
+
+  const EditNoteDialog({
+    super.key,
+    required this.note,
+  });
 
   @override
-  State<CreateNoteWidget> createState() => _CreateNoteWidgetState();
+  State<EditNoteDialog> createState() => _EditNoteDialogState();
 }
 
-class _CreateNoteWidgetState extends State<CreateNoteWidget> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
-  final FocusNode _titleFocusNode = FocusNode();
-  final FocusNode _contentFocusNode = FocusNode();
-  
-  bool _isExpanded = false;
-  bool _isSubmitting = false;
-  NoteColor _selectedColor = NoteColor.yellow;
-  List<String> _selectedLabels = [];
+class _EditNoteDialogState extends State<EditNoteDialog> {
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+  late NoteColor _selectedColor;
+  late List<String> _selectedLabels;
   DateTime? _reminderDate;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.note.title);
+    _contentController = TextEditingController(text: widget.note.content);
+    _selectedColor = widget.note.color;
+    _selectedLabels = List.from(widget.note.labels);
+    _reminderDate = widget.note.reminderDate;
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _titleFocusNode.dispose();
-    _contentFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Title input
-          TextField(
-            controller: _titleController,
-            focusNode: _titleFocusNode,
-            onTap: () {
-              if (!_isExpanded) {
-                setState(() => _isExpanded = true);
-              }
-            },
-            decoration: const InputDecoration(
-              hintText: AppStrings.takeANote,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(16),
+    return Dialog(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Edit Note',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
             ),
-            style: const TextStyle(fontSize: 16),
-          ),
-          
-          // Expanded content
-          if (_isExpanded) ...[
-            // Content input
-            TextField(
-              controller: _contentController,
-              focusNode: _contentFocusNode,
-              decoration: const InputDecoration(
-                hintText: AppStrings.addANote,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16),
-              ),
-              maxLines: 3,
-              style: const TextStyle(fontSize: 14),
-            ),
+            const SizedBox(height: 16),
             
+            // Title input
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                hintText: 'Title',
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            
+            // Content input
+            Expanded(
+              child: TextField(
+                controller: _contentController,
+                decoration: const InputDecoration(
+                  hintText: 'Note content...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+              ),
+            ),
             const SizedBox(height: 16),
             
             // Color picker
@@ -94,32 +104,32 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
                 });
               },
             ),
-            
             const SizedBox(height: 16),
             
             // Labels and reminder
             Row(
               children: [
                 _buildActionButton(
-                  icon: MdiIcons.palette,
-                  onPressed: _showColorPicker,
-                  tooltip: 'Color',
-                ),
-                _buildActionButton(
                   icon: MdiIcons.labelOutline,
                   onPressed: _showLabelPicker,
-                  tooltip: 'Labels',
+                  tooltip: 'Add Labels',
                 ),
                 _buildActionButton(
                   icon: MdiIcons.clockOutline,
                   onPressed: _showReminderPicker,
-                  tooltip: 'Reminder',
+                  tooltip: 'Set Reminder',
                 ),
+                if (_reminderDate != null)
+                  _buildActionButton(
+                    icon: MdiIcons.close,
+                    onPressed: _removeReminder,
+                    tooltip: 'Remove Reminder',
+                  ),
                 const Spacer(),
                 // Action buttons
                 TextButton(
-                  onPressed: _cancel,
-                  child: const Text(AppStrings.cancel),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -130,18 +140,15 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(AppStrings.save),
+                      : const Text('Save'),
                 ),
               ],
             ),
-            
-            const SizedBox(height: 16),
           ],
-        ],
+        ),
       ),
     );
   }
-
 
   Widget _buildActionButton({
     required IconData icon,
@@ -165,16 +172,12 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
     );
   }
 
-  void _showColorPicker() {
-    // Color picker is already visible in expanded state
-  }
-
   void _showLabelPicker() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Labels'),
-        content: const Text('Label picker functionality will be implemented'),
+        content: const Text('Label management will be implemented in the full version.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -188,14 +191,16 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
   void _showReminderPicker() {
     showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _reminderDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     ).then((date) {
       if (date != null) {
         showTimePicker(
           context: context,
-          initialTime: TimeOfDay.now(),
+          initialTime: _reminderDate != null
+              ? TimeOfDay.fromDateTime(_reminderDate!)
+              : TimeOfDay.now(),
         ).then((time) {
           if (time != null) {
             setState(() {
@@ -213,12 +218,8 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
     });
   }
 
-  void _cancel() {
+  void _removeReminder() {
     setState(() {
-      _isExpanded = false;
-      _titleController.clear();
-      _contentController.clear();
-      _selectedLabels.clear();
       _reminderDate = null;
     });
   }
@@ -231,7 +232,7 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
     setState(() => _isSubmitting = true);
 
     try {
-      final noteData = CreateNoteData(
+      final updateData = UpdateNoteData(
         title: _titleController.text.trim(),
         content: _contentController.text.trim(),
         color: _selectedColor,
@@ -239,14 +240,19 @@ class _CreateNoteWidgetState extends State<CreateNoteWidget> {
         reminderDate: _reminderDate,
       );
 
-      await context.read<NoteProvider>().createNote(noteData);
+      await context.read<NoteProvider>().updateNote(widget.note.id, updateData);
       
-      _cancel();
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Note updated successfully')),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error creating note: $e'),
+            content: Text('Error updating note: $e'),
             backgroundColor: Colors.red,
           ),
         );

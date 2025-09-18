@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'providers/note_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/firebase_service.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 import 'constants/app_constants.dart';
 
 void main() async {
@@ -39,7 +39,7 @@ class KeepApp extends StatelessWidget {
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
             themeMode: themeProvider.themeMode,
-            home: const HomeScreen(),
+            home: const MainScreen(),
           );
         },
       ),

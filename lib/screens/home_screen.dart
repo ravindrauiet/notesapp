@@ -131,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: const custom.NavigationDrawer(),
       body: Consumer<NoteProvider>(
         builder: (context, noteProvider, child) {
           if (noteProvider.loading && noteProvider.notes.isEmpty) {

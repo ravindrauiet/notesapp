@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/note.dart';
 import '../providers/note_provider.dart';
 import '../constants/app_constants.dart';
+import 'edit_note_dialog.dart';
 
 class NoteCard extends StatefulWidget {
   final Note note;
@@ -196,19 +197,9 @@ class _NoteCardState extends State<NoteCard> {
   }
 
   void _editNote() {
-    // TODO: Navigate to edit note screen
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(widget.note.title),
-        content: Text(widget.note.content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+      builder: (context) => EditNoteDialog(note: widget.note),
     );
   }
 
