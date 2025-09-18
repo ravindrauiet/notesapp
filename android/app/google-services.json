@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "152751015910",
+    "project_id": "noteswebapp-7ab1e",
+    "storage_bucket": "noteswebapp-7ab1e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152751015910:android:your_android_app_id",
+        "android_client_info": {
+          "package_name": "com.example.google_keep_clone_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152751015910-your_client_id.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCslOVHFkY3JmEAbsLZVHrmD09_FhKmoyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152751015910-your_web_client_id.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
